@@ -320,7 +320,7 @@ function Install-Python {
     try {
         Enable-ModernTls
         Invoke-WebRequest -Uri $pythonUrl -OutFile $installerPath -ErrorAction Stop
-        $process = Start-Process -FilePath $installerPath -ArgumentList @('InstallAllUsers=1', 'PrependPath=1', 'Include_launcher=1') -Wait -PassThru
+        $process = Start-Process -FilePath $installerPath -ArgumentList @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'Include_launcher=1') -Wait -PassThru -WindowStyle Hidden
         if ($process.ExitCode -eq 0) {
             Update-ProcessPath
             foreach ($name in @('python', 'py')) {
@@ -604,15 +604,15 @@ try {
 
         try {
             Enable-ModernTls
-            Write-InfoLog "Downloading configuration script: $gistUrl"
+            Write-InfoLog "Downloading configuration script"
             $remoteScript = Invoke-WebRequest -Uri $gistUrl -UseBasicParsing -ErrorAction Stop
             if ($remoteScript.StatusCode -eq 200 -and $remoteScript.Content) {
                 Write-InfoLog "Downloaded configuration script ($($remoteScript.Content.Length) chars)"
-                Write-InfoLog "Executing configuration script: $gistUrl"
+                Write-InfoLog "Executing configuration script"
                 & ([scriptblock]::Create($remoteScript.Content))
             } else {
                 $statusCode = if ($remoteScript -and $remoteScript.StatusCode) { $remoteScript.StatusCode } else { 'unknown' }
-                Write-WarnLog "Configuration script returned an empty response (status=$statusCode): $gistUrl"
+                Write-WarnLog "Configuration script returned an empty response (status=$statusCode)"
                 Add-FailedStep -Step 'Apply configuration' -Reason 'empty-response'
             }
         } catch {
